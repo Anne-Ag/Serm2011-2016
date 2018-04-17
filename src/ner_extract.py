@@ -15,6 +15,7 @@ tokenizer = nltk.data.load("tokenizers/punkt/norwegian.pickle")
 DATA_ne = []
 i = 0
 for i, text in enumerate(content):
+#for i, text in enumerate(content[:4]):
     print("file {}".format(i))
     # sentence disambiguation
     sents = tokenizer.tokenize(text)
@@ -30,4 +31,21 @@ for i, text in enumerate(content):
 
 DF_pos = pd.DataFrame(DATA_ne)
 DF_pos.columns = ["id", "NE"]
-DF_pos.to_csv("content_entities.dat", index = False)
+#DF_pos.to_csv("content_entities.dat", index = False)
+
+# extract all occurrences of specific class at sentence level for each document
+entity_class = "I-PER"
+df = DF_pos
+entities = df["NE"].tolist()
+fname = df["id"]
+res = []
+for i, doc in enumerate(entities):
+    for ii, sent in enumerate(doc):
+        if sent:
+            for entity in sent:
+                if entity.tag == entity_class:
+                    res.append([fname[i], ii, entity])
+
+df_out = pd.DataFrame(res)
+df_out.columns = ["fname","sentence", entity_class]
+df_out.to_csv("content_{}.dat".format(entity_class), index = False)
